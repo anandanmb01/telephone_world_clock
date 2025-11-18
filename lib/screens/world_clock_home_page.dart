@@ -15,9 +15,7 @@ class WorldClockHomePage extends StatefulWidget {
 }
 
 class _WorldClockHomePageState extends State<WorldClockHomePage> {
-  String _selectedCountryCode = 'IN';
   String _phoneCountryCode = 'IN';
-  int _localOffset = 330; // Used for time converter (default India)
   int _phoneOffset = 330; // Default to India
   Timer? _timer;
   DateTime _currentTime = DateTime.now();
@@ -85,7 +83,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
       final parsedTime = timeFormat.parse(localTime);
 
       final localMinutes = parsedTime.hour * 60 + parsedTime.minute;
-      final remoteMinutes = localMinutes + (_phoneOffset - _localOffset);
+      final remoteMinutes = localMinutes + (_phoneOffset - _systemOffset);
 
       final normalizedMinutes = remoteMinutes % 1440;
       final adjustedMinutes = normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
@@ -105,7 +103,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
       final parsedTime = timeFormat.parse(remoteTime);
 
       final remoteMinutes = parsedTime.hour * 60 + parsedTime.minute;
-      final localMinutes = remoteMinutes + (_localOffset - _phoneOffset);
+      final localMinutes = remoteMinutes + (_systemOffset - _phoneOffset);
 
       final normalizedMinutes = localMinutes % 1440;
       final adjustedMinutes = normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
@@ -137,9 +135,6 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
             const SizedBox(height: 24),
             // Phone number input with reset button
             _buildPhoneInputCard(),
-            const SizedBox(height: 16),
-            // Default country selection
-            _buildCountrySelectionCard(),
             const SizedBox(height: 24),
             // Time converter
             _buildTimeConverterCard(),
@@ -229,44 +224,6 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
     );
   }
 
-  Widget _buildCountrySelectionCard() {
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Your Default Country',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _selectedCountryCode,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Select Your Country',
-              ),
-              items: countryData.entries.map((entry) {
-                return DropdownMenuItem(
-                  value: entry.key,
-                  child: Text('${entry.value['name']} (${entry.key})'),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCountryCode = value ?? 'IN';
-                  _localOffset = countryData[_selectedCountryCode]?['offset'] ?? 330;
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTimeConverterCard() {
     return Card(
       elevation: 4,
@@ -286,7 +243,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
                   child: TextField(
                     controller: _localTimeController,
                     decoration: InputDecoration(
-                      labelText: '${countryData[_selectedCountryCode]?['name']} Time (HH:mm)',
+                      labelText: '$_systemTimezoneName Time (HH:mm)',
                       border: const OutlineInputBorder(),
                       hintText: '14:30',
                     ),
@@ -314,7 +271,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Time difference: ${((_phoneOffset - _localOffset) / 60).toStringAsFixed(1)} hours',
+              'Time difference: ${((_phoneOffset - _systemOffset) / 60).toStringAsFixed(1)} hours',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
