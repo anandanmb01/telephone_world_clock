@@ -148,38 +148,6 @@ class ClockPainter extends CustomPainter {
       }
     }
 
-    // Draw AM/PM labels
-    final amPmStyle = TextStyle(
-      color: color,
-      fontSize: isOuter ? 12 : 10,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 1.0,
-    );
-
-    // AM label (left side, 9 o'clock position)
-    final amPainter = TextPainter(
-      text: TextSpan(text: 'AM', style: amPmStyle),
-      textDirection: ui.TextDirection.ltr,
-    );
-    amPainter.layout();
-    final amOffset = Offset(
-      center.dx - radius * 0.4 - amPainter.width / 2,
-      center.dy - amPainter.height / 2,
-    );
-    amPainter.paint(canvas, amOffset);
-
-    // PM label (right side, 3 o'clock position)
-    final pmPainter = TextPainter(
-      text: TextSpan(text: 'PM', style: amPmStyle),
-      textDirection: ui.TextDirection.ltr,
-    );
-    pmPainter.layout();
-    final pmOffset = Offset(
-      center.dx + radius * 0.4 - pmPainter.width / 2,
-      center.dy - pmPainter.height / 2,
-    );
-    pmPainter.paint(canvas, pmOffset);
-
     // Draw country label (moved up for inner clock)
     final countryPainter = TextPainter(
       text: TextSpan(
