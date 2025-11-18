@@ -197,8 +197,8 @@ class ClockPainter extends CustomPainter {
       ellipsis: '...',
     );
     countryPainter.layout(maxWidth: radius * 1.4);
-    // Inner clock label above center, outer clock label at bottom between circles
-    final labelYPosition = isOuter ? radius * 0.75 : -radius * 0.3;
+    // Inner clock label above center, outer clock label at bottom between numbers and markers
+    final labelYPosition = isOuter ? radius * 0.55 : -radius * 0.3;
     final labelOffset = Offset(
       center.dx - countryPainter.width / 2,
       center.dy + labelYPosition - countryPainter.height / 2,
