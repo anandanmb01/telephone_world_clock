@@ -180,7 +180,7 @@ class ClockPainter extends CustomPainter {
     );
     amPainter.paint(canvas, amOffset);
 
-    // Draw country label (moved up for inner clock)
+    // Draw country label (moved up for inner clock, between circles for outer)
     final countryPainter = TextPainter(
       text: TextSpan(
         text: country,
@@ -193,9 +193,11 @@ class ClockPainter extends CustomPainter {
       textDirection: ui.TextDirection.ltr,
     );
     countryPainter.layout();
+    // Inner clock label above center, outer clock label at bottom between circles
+    final labelYPosition = isOuter ? radius * 0.75 : -radius * 0.25;
     final labelOffset = Offset(
       center.dx - countryPainter.width / 2,
-      center.dy + (isOuter ? radius * 0.5 : -radius * 0.25) - countryPainter.height / 2,
+      center.dy + labelYPosition - countryPainter.height / 2,
     );
     countryPainter.paint(canvas, labelOffset);
   }
