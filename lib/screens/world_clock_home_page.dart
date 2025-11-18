@@ -277,23 +277,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: _resetPhoneNumber,
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Reset'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                              foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
                       TextField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
@@ -305,12 +290,30 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                         ),
                         onChanged: _onPhoneChanged,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
                         'Detected Country: ${countryData[_phoneCountryCode]?['name'] ?? 'Unknown'}',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Divider(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        thickness: 1,
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: _resetPhoneNumber,
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Reset'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            textStyle: const TextStyle(fontSize: 13),
+                          ),
                         ),
                       ),
                     ],
