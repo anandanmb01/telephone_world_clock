@@ -186,6 +186,19 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
             const SizedBox(height: 24),
             // Time converter
             _buildTimeConverterCard(),
+            const SizedBox(height: 16),
+            // Credits at bottom right
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'for dibina',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.withOpacity(0.4),
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
           ],
         ),
       ),
