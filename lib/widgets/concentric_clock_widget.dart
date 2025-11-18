@@ -225,12 +225,7 @@ class ClockPainter extends CustomPainter {
       ..strokeWidth = 1.5;
     canvas.drawPath(pointerPath, borderPaint);
 
-    // Draw center pivot circle with glow
-    final glowPaint = Paint()
-      ..color = color.withOpacity(0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawCircle(center, 12, glowPaint);
-
+    // Draw center pivot circle
     final centerPivotPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
@@ -245,22 +240,17 @@ class ClockPainter extends CustomPainter {
       centerHighlight,
     );
 
-    // Draw modern pointer tip with glow
-    final tipGlowPaint = Paint()
-      ..color = color.withOpacity(0.4)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-    canvas.drawCircle(pointerEnd, 10, tipGlowPaint);
-
+    // Draw modern pointer tip
     final tipPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(pointerEnd, 7, tipPaint);
+    canvas.drawCircle(pointerEnd, 3.5, tipPaint);
 
     final tipBorderPaint = Paint()
       ..color = Colors.white.withOpacity(0.6)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawCircle(pointerEnd, 7, tipBorderPaint);
+      ..strokeWidth = 1.5;
+    canvas.drawCircle(pointerEnd, 3.5, tipBorderPaint);
 
     // Draw time text in a modern badge
     final hour = currentHour.floor();
