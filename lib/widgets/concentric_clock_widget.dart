@@ -61,42 +61,81 @@ class ClockPainter extends CustomPainter {
 
     // Calculate local time with offset
     final utcTime = currentTime.toUtc();
-    final localMinutes = (utcTime.hour * 60 + utcTime.minute + localOffset) % 1440;
+    final localMinutes =
+        (utcTime.hour * 60 + utcTime.minute + localOffset) % 1440;
     final localHour = localMinutes / 60;
 
     // Calculate remote time with offset
-    final remoteMinutes = (utcTime.hour * 60 + utcTime.minute + remoteOffset) % 1440;
+    final remoteMinutes =
+        (utcTime.hour * 60 + utcTime.minute + remoteOffset) % 1440;
     final remoteHour = remoteMinutes / 60;
 
     // Draw outer circle (remote time)
-    _drawClock(canvas, center, outerRadius, remoteHour, remoteCountry, colorScheme.primary, true);
+    _drawClock(
+      canvas,
+      center,
+      outerRadius,
+      remoteHour,
+      remoteCountry,
+      colorScheme.primary,
+      true,
+    );
 
     // Draw inner circle (local time)
-    _drawClock(canvas, center, innerRadius, localHour, localCountry, colorScheme.secondary, false);
+    _drawClock(
+      canvas,
+      center,
+      innerRadius,
+      localHour,
+      localCountry,
+      colorScheme.secondary,
+      false,
+    );
 
     // Draw current time pointer for local time
-    _drawTimePointer(canvas, center, innerRadius, localHour, colorScheme.secondary);
+    _drawTimePointer(
+      canvas,
+      center,
+      innerRadius,
+      localHour,
+      colorScheme.secondary,
+    );
 
     // Draw current time pointer for remote time
-    _drawTimePointer(canvas, center, outerRadius, remoteHour, colorScheme.primary);
+    _drawTimePointer(
+      canvas,
+      center,
+      outerRadius,
+      remoteHour,
+      colorScheme.primary,
+    );
 
     // Draw legend
     _drawLegend(canvas, size, colorScheme);
   }
 
-  void _drawClock(Canvas canvas, Offset center, double radius, double currentHour,
-                  String country, Color color, bool isOuter) {
+  void _drawClock(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double currentHour,
+    String country,
+    Color color,
+    bool isOuter,
+  ) {
     // Draw clock circle
-    final circlePaint = Paint()
-      ..color = color.withOpacity(0.1)
-      ..style = PaintingStyle.fill;
+    final circlePaint =
+        Paint()
+          ..color = color.withOpacity(0.1)
+          ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, circlePaint);
 
     // Draw clock border
-    final borderPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+    final borderPaint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
     canvas.drawCircle(center, radius, borderPaint);
 
     // Draw hour markers and labels
@@ -111,9 +150,10 @@ class ClockPainter extends CustomPainter {
         center.dy + radius * sin(angle),
       );
 
-      final markerPaint = Paint()
-        ..color = color
-        ..strokeWidth = i % 6 == 0 ? 3 : 1;
+      final markerPaint =
+          Paint()
+            ..color = color
+            ..strokeWidth = i % 6 == 0 ? 3 : 1;
       canvas.drawLine(markerStart, markerEnd, markerPaint);
 
       // Draw hour numbers (0->12 for both AM and PM)
@@ -198,7 +238,7 @@ class ClockPainter extends CustomPainter {
     );
     countryPainter.layout(maxWidth: radius * 1.4);
     // Inner clock label above center, outer clock label at bottom between numbers and markers
-    final labelYPosition = isOuter ? radius * 0.55 : -radius * 0.3;
+    final labelYPosition = isOuter ? radius * 0.83 : -radius * 0.3;
     final labelOffset = Offset(
       center.dx - countryPainter.width / 2,
       center.dy + labelYPosition - countryPainter.height / 2,
@@ -206,7 +246,13 @@ class ClockPainter extends CustomPainter {
     countryPainter.paint(canvas, labelOffset);
   }
 
-  void _drawTimePointer(Canvas canvas, Offset center, double radius, double currentHour, Color color) {
+  void _drawTimePointer(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double currentHour,
+    Color color,
+  ) {
     final angle = (currentHour * 15 - 90) * pi / 180;
     final pointerEnd = Offset(
       center.dx + radius * 0.85 * cos(angle),
@@ -229,9 +275,10 @@ class ClockPainter extends CustomPainter {
     shadowPath.lineTo(pointerEnd.dx, pointerEnd.dy);
     shadowPath.close();
 
-    final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.15)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    final shadowPaint =
+        Paint()
+          ..color = Colors.black.withOpacity(0.15)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
     canvas.drawPath(shadowPath, shadowPaint);
 
     // Draw tapered pointer (arrow shape)
@@ -253,51 +300,50 @@ class ClockPainter extends CustomPainter {
     pointerPath.close();
 
     // Gradient from center to tip
-    final pointerPaint = Paint()
-      ..shader = ui.Gradient.linear(
-        center,
-        pointerEnd,
-        [
-          color.withOpacity(0.7),
-          color,
-        ],
-        [0.0, 1.0],
-      )
-      ..style = PaintingStyle.fill;
+    final pointerPaint =
+        Paint()
+          ..shader = ui.Gradient.linear(
+            center,
+            pointerEnd,
+            [color.withOpacity(0.7), color],
+            [0.0, 1.0],
+          )
+          ..style = PaintingStyle.fill;
     canvas.drawPath(pointerPath, pointerPaint);
 
     // Draw border around pointer for definition
-    final borderPaint = Paint()
-      ..color = color.withOpacity(0.9)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+    final borderPaint =
+        Paint()
+          ..color = color.withOpacity(0.9)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5;
     canvas.drawPath(pointerPath, borderPaint);
 
     // Draw center pivot circle
-    final centerPivotPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+    final centerPivotPaint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill;
     canvas.drawCircle(center, 8, centerPivotPaint);
 
-    final centerHighlight = Paint()
-      ..color = Colors.white.withOpacity(0.4)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(
-      Offset(center.dx - 2, center.dy - 2),
-      3,
-      centerHighlight,
-    );
+    final centerHighlight =
+        Paint()
+          ..color = Colors.white.withOpacity(0.4)
+          ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(center.dx - 2, center.dy - 2), 3, centerHighlight);
 
     // Draw modern pointer tip
-    final tipPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
+    final tipPaint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill;
     canvas.drawCircle(pointerEnd, 3.5, tipPaint);
 
-    final tipBorderPaint = Paint()
-      ..color = Colors.white.withOpacity(0.6)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+    final tipBorderPaint =
+        Paint()
+          ..color = Colors.white.withOpacity(0.6)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5;
     canvas.drawCircle(pointerEnd, 3.5, tipBorderPaint);
 
     // Draw time text in a modern badge
@@ -308,7 +354,8 @@ class ClockPainter extends CustomPainter {
     final isPM = hour >= 12;
     final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
     final amPm = isPM ? 'PM' : 'AM';
-    final timeText = '${displayHour.toString()}:${minute.toString().padLeft(2, '0')} $amPm';
+    final timeText =
+        '${displayHour.toString()}:${minute.toString().padLeft(2, '0')} $amPm';
 
     final timePainter = TextPainter(
       text: TextSpan(
@@ -342,39 +389,34 @@ class ClockPainter extends CustomPainter {
       ),
       const Radius.circular(12),
     );
-    final badgeShadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.2)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    final badgeShadowPaint =
+        Paint()
+          ..color = Colors.black.withOpacity(0.2)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     canvas.drawRRect(badgeRect, badgeShadowPaint);
 
     // Badge background with gradient
     final badgeRRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        badgeOffset.dx,
-        badgeOffset.dy,
-        badgeWidth,
-        badgeHeight,
-      ),
+      Rect.fromLTWH(badgeOffset.dx, badgeOffset.dy, badgeWidth, badgeHeight),
       const Radius.circular(12),
     );
 
-    final badgePaint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(badgeOffset.dx, badgeOffset.dy),
-        Offset(badgeOffset.dx, badgeOffset.dy + badgeHeight),
-        [
-          color.withOpacity(0.95),
-          color.withOpacity(0.85),
-        ],
-      )
-      ..style = PaintingStyle.fill;
+    final badgePaint =
+        Paint()
+          ..shader = ui.Gradient.linear(
+            Offset(badgeOffset.dx, badgeOffset.dy),
+            Offset(badgeOffset.dx, badgeOffset.dy + badgeHeight),
+            [color.withOpacity(0.95), color.withOpacity(0.85)],
+          )
+          ..style = PaintingStyle.fill;
     canvas.drawRRect(badgeRRect, badgePaint);
 
     // Badge border
-    final badgeBorderPaint = Paint()
-      ..color = Colors.white.withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+    final badgeBorderPaint =
+        Paint()
+          ..color = Colors.white.withOpacity(0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5;
     canvas.drawRRect(badgeRRect, badgeBorderPaint);
 
     // Draw time text
@@ -394,18 +436,20 @@ class ClockPainter extends CustomPainter {
     final horizontalPadding = 20.0;
 
     // Local time legend (left extreme)
-    final localCirclePaint = Paint()
-      ..color = colorScheme.secondary
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(horizontalPadding + 8, legendY), 8, localCirclePaint);
+    final localCirclePaint =
+        Paint()
+          ..color = colorScheme.secondary
+          ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(horizontalPadding + 8, legendY),
+      8,
+      localCirclePaint,
+    );
 
     final localTextPainter = TextPainter(
       text: TextSpan(
         text: 'Inner: $localCountry',
-        style: TextStyle(
-          color: colorScheme.onSurface,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
       ),
       textDirection: ui.TextDirection.ltr,
     );
@@ -416,21 +460,20 @@ class ClockPainter extends CustomPainter {
     final remoteTextPainter = TextPainter(
       text: TextSpan(
         text: 'Outer: $remoteCountry',
-        style: TextStyle(
-          color: colorScheme.onSurface,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
       ),
       textDirection: ui.TextDirection.ltr,
     );
     remoteTextPainter.layout();
 
-    final remoteCirclePaint = Paint()
-      ..color = colorScheme.primary
-      ..style = PaintingStyle.fill;
+    final remoteCirclePaint =
+        Paint()
+          ..color = colorScheme.primary
+          ..style = PaintingStyle.fill;
 
     // Position at right extreme
-    final remoteX = size.width - horizontalPadding - remoteTextPainter.width - 23;
+    final remoteX =
+        size.width - horizontalPadding - remoteTextPainter.width - 23;
     canvas.drawCircle(Offset(remoteX + 8, legendY), 8, remoteCirclePaint);
     remoteTextPainter.paint(canvas, Offset(remoteX + 23, legendY - 6));
   }
@@ -438,7 +481,7 @@ class ClockPainter extends CustomPainter {
   @override
   bool shouldRepaint(ClockPainter oldDelegate) {
     return currentTime != oldDelegate.currentTime ||
-           localOffset != oldDelegate.localOffset ||
-           remoteOffset != oldDelegate.remoteOffset;
+        localOffset != oldDelegate.localOffset ||
+        remoteOffset != oldDelegate.remoteOffset;
   }
 }
