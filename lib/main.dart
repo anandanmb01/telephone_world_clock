@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/phone_number.dart';
@@ -439,7 +440,7 @@ class ClockPainter extends CustomPainter {
               fontWeight: FontWeight.bold,
             ),
           ),
-          textDirection: TextDirection.ltr,
+          textDirection: ui.TextDirection.ltr,
         );
         textPainter.layout();
         final textOffset = Offset(
@@ -460,7 +461,7 @@ class ClockPainter extends CustomPainter {
           fontWeight: FontWeight.bold,
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     );
     countryPainter.layout();
     final labelOffset = Offset(
@@ -504,7 +505,7 @@ class ClockPainter extends CustomPainter {
           backgroundColor: Colors.white.withOpacity(0.8),
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     );
     timePainter.layout();
     final timeOffset = Offset(
@@ -531,7 +532,7 @@ class ClockPainter extends CustomPainter {
           fontSize: 12,
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     );
     localTextPainter.layout();
     localTextPainter.paint(canvas, Offset(55, legendY - 6));
@@ -550,7 +551,7 @@ class ClockPainter extends CustomPainter {
           fontSize: 12,
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
     );
     remoteTextPainter.layout();
     remoteTextPainter.paint(canvas, Offset(size.width / 2 + 35, legendY - 6));
