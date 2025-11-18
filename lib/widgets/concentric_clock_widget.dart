@@ -116,16 +116,16 @@ class ClockPainter extends CustomPainter {
         ..strokeWidth = i % 6 == 0 ? 3 : 1;
       canvas.drawLine(markerStart, markerEnd, markerPaint);
 
-      // Draw hour numbers (AM on left: 0->12, PM on right: 12->0)
+      // Draw hour numbers (0->12 for both AM and PM)
       if (i % 3 == 0) {
-        // Calculate display hour
+        // Calculate display hour (12-hour format for both hemispheres)
         // Left side (AM): 0-12 shows as 0-12
-        // Right side (PM): 13-23 shows as 11-1 (counting backwards)
+        // Right side (PM): 13-23 shows as 1-11 (i.e., 13->1, 14->2, etc.)
         int displayHour;
         if (i <= 12) {
           displayHour = i;
         } else {
-          displayHour = 24 - i;
+          displayHour = i - 12;
         }
 
         final textPainter = TextPainter(
@@ -147,6 +147,38 @@ class ClockPainter extends CustomPainter {
         textPainter.paint(canvas, textOffset);
       }
     }
+
+    // Draw AM/PM labels
+    final amPmStyle = TextStyle(
+      color: color,
+      fontSize: isOuter ? 11 : 9,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.8,
+    );
+
+    // AM label (left side, 9 o'clock position)
+    final amPainter = TextPainter(
+      text: TextSpan(text: 'AM', style: amPmStyle),
+      textDirection: ui.TextDirection.ltr,
+    );
+    amPainter.layout();
+    final amOffset = Offset(
+      center.dx - radius * 0.35 - amPainter.width / 2,
+      center.dy - amPainter.height / 2,
+    );
+    amPainter.paint(canvas, amOffset);
+
+    // PM label (right side, 3 o'clock position)
+    final pmPainter = TextPainter(
+      text: TextSpan(text: 'PM', style: amPmStyle),
+      textDirection: ui.TextDirection.ltr,
+    );
+    pmPainter.layout();
+    final pmOffset = Offset(
+      center.dx + radius * 0.35 - pmPainter.width / 2,
+      center.dy - pmPainter.height / 2,
+    );
+    pmPainter.paint(canvas, pmOffset);
 
     // Draw country label (moved up for inner clock)
     final countryPainter = TextPainter(
