@@ -52,6 +52,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
   Timer? _timer;
   DateTime _currentTime = DateTime.now();
 
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _localTimeController = TextEditingController();
   final TextEditingController _remoteTimeController = TextEditingController();
 
@@ -97,9 +98,20 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _phoneController.dispose();
     _localTimeController.dispose();
     _remoteTimeController.dispose();
     super.dispose();
+  }
+
+  void _resetPhoneNumber() {
+    setState(() {
+      _phoneController.clear();
+      _phoneCountryCode = 'IN';
+      _phoneOffset = 330;
+      _localTimeController.clear();
+      _remoteTimeController.clear();
+    });
   }
 
   void _onPhoneChanged(PhoneNumber phone) {
@@ -162,75 +174,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Default Country',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _selectedCountryCode,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Your Country',
-                      ),
-                      items: _countryData.entries.map((entry) {
-                        return DropdownMenuItem(
-                          value: entry.key,
-                          child: Text('${entry.value['name']} (${entry.key})'),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCountryCode = value ?? 'IN';
-                          _localOffset = _countryData[_selectedCountryCode]?['offset'] ?? 330;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Enter Phone Number',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    IntlPhoneField(
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        border: OutlineInputBorder(),
-                      ),
-                      initialCountryCode: 'IN',
-                      onChanged: _onPhoneChanged,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Detected Country: ${_countryData[_phoneCountryCode]?['name'] ?? 'Unknown'}',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+            // Clock at the top
             Card(
               elevation: 4,
               child: Padding(
@@ -257,6 +201,95 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
               ),
             ),
             const SizedBox(height: 24),
+            // Phone number input with reset button
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Enter Phone Number',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _resetPhoneNumber,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reset'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    IntlPhoneField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number (e.g., +1-555-1234)',
+                        border: OutlineInputBorder(),
+                      ),
+                      initialCountryCode: 'IN',
+                      showCountryFlag: false,
+                      showDropdownIcon: false,
+                      onChanged: _onPhoneChanged,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Detected Country: ${_countryData[_phoneCountryCode]?['name'] ?? 'Unknown'}',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Default country selection
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Your Default Country',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCountryCode,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Select Your Country',
+                      ),
+                      items: _countryData.entries.map((entry) {
+                        return DropdownMenuItem(
+                          value: entry.key,
+                          child: Text('${entry.value['name']} (${entry.key})'),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCountryCode = value ?? 'IN';
+                          _localOffset = _countryData[_selectedCountryCode]?['offset'] ?? 330;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Time converter
             Card(
               elevation: 4,
               child: Padding(
