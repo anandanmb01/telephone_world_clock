@@ -17,7 +17,7 @@ class WorldClockHomePage extends StatefulWidget {
 class _WorldClockHomePageState extends State<WorldClockHomePage> {
   String _selectedCountryCode = 'IN';
   String _phoneCountryCode = 'IN';
-  int _localOffset = 330; // India UTC+5:30 in minutes
+  int _localOffset = 330; // Used for time converter (default India)
   int _phoneOffset = 330; // Default to India
   Timer? _timer;
   DateTime _currentTime = DateTime.now();
@@ -25,6 +25,23 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _localTimeController = TextEditingController();
   final TextEditingController _remoteTimeController = TextEditingController();
+
+  // Get system timezone offset in minutes
+  int get _systemOffset {
+    final now = DateTime.now();
+    final offset = now.timeZoneOffset;
+    return offset.inMinutes;
+  }
+
+  // Get system timezone name
+  String get _systemTimezoneName {
+    final now = DateTime.now();
+    final offset = now.timeZoneOffset;
+    final hours = offset.inHours;
+    final minutes = offset.inMinutes.remainder(60).abs();
+    final sign = hours >= 0 ? '+' : '';
+    return 'System (UTC$sign$hours:${minutes.toString().padLeft(2, '0')})';
+  }
 
   @override
   void initState() {
@@ -148,9 +165,9 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
               height: 400,
               child: ConcentricClockWidget(
                 currentTime: _currentTime,
-                localOffset: _localOffset,
+                localOffset: _systemOffset,
                 remoteOffset: _phoneOffset,
-                localCountry: countryData[_selectedCountryCode]?['name'] ?? 'Unknown',
+                localCountry: _systemTimezoneName,
                 remoteCountry: countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
               ),
             ),
