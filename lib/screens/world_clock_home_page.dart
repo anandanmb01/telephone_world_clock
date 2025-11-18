@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:intl_phone_field/phone_number.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/country_data.dart';
+import '../constants/country_codes.dart';
 import '../widgets/concentric_clock_widget.dart';
 
 /// Main home page for the world clock application
@@ -56,9 +55,9 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
     });
   }
 
-  void _onPhoneChanged(PhoneNumber phone) {
+  void _onPhoneChanged(String phoneNumber) {
     setState(() {
-      _phoneCountryCode = phone.countryISOCode ?? 'IN';
+      _phoneCountryCode = detectCountryFromPhone(phoneNumber);
       _phoneOffset = countryData[_phoneCountryCode]?['offset'] ?? 330;
     });
   }
@@ -188,15 +187,15 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
               ],
             ),
             const SizedBox(height: 8),
-            IntlPhoneField(
+            TextField(
               controller: _phoneController,
+              keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
-                labelText: 'Phone Number (e.g., +1-555-1234)',
+                labelText: 'Phone Number',
+                hintText: '+916734... or +1234...',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.phone),
               ),
-              initialCountryCode: 'IN',
-              showCountryFlag: false,
-              showDropdownIcon: false,
               onChanged: _onPhoneChanged,
             ),
             const SizedBox(height: 8),
