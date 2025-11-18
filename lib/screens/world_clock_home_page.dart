@@ -51,8 +51,8 @@ class WorldClockHomePage extends StatefulWidget {
 
 class _WorldClockHomePageState extends State<WorldClockHomePage>
     with SingleTickerProviderStateMixin {
-  String _phoneCountryCode = 'IN';
-  int _phoneOffset = 330; // Default to India
+  late String _phoneCountryCode;
+  late int _phoneOffset;
   Timer? _timer;
   DateTime _currentTime = DateTime.now();
   late TabController _tabController;
@@ -78,9 +78,29 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
     return 'System (UTC$sign$hours:${minutes.toString().padLeft(2, '0')})';
   }
 
+  // Detect default country based on system timezone offset
+  String _detectCountryFromSystemTimezone() {
+    final systemOffsetMinutes = _systemOffset;
+
+    // Try to find a country with matching offset
+    for (var entry in countryData.entries) {
+      if (entry.value['offset'] == systemOffsetMinutes) {
+        return entry.key;
+      }
+    }
+
+    // If no exact match, return India as fallback
+    return 'IN';
+  }
+
   @override
   void initState() {
     super.initState();
+
+    // Detect default country based on system timezone
+    _phoneCountryCode = _detectCountryFromSystemTimezone();
+    _phoneOffset = countryData[_phoneCountryCode]?['offset'] ?? 330;
+
     _tabController = TabController(length: 2, vsync: this);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -102,8 +122,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
   void _resetPhoneNumber() {
     setState(() {
       _phoneController.clear();
-      _phoneCountryCode = 'IN';
-      _phoneOffset = 330;
+      _phoneCountryCode = _detectCountryFromSystemTimezone();
+      _phoneOffset = countryData[_phoneCountryCode]?['offset'] ?? 330;
       _localTimeController.clear();
       _remoteTimeController.clear();
     });
