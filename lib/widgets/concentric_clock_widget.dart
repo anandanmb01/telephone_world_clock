@@ -165,19 +165,104 @@ class ClockPainter extends CustomPainter {
       center.dy + radius * 0.85 * sin(angle),
     );
 
-    final pointerPaint = Paint()
-      ..color = color
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(center, pointerEnd, pointerPaint);
+    // Draw shadow for depth
+    final shadowPath = Path();
+    final shadowWidth = 8.0;
+    final perpAngle = angle + pi / 2;
 
-    // Draw pointer circle at the end
-    final circlePaint = Paint()
+    shadowPath.moveTo(
+      center.dx + shadowWidth / 2 * cos(perpAngle),
+      center.dy + shadowWidth / 2 * sin(perpAngle),
+    );
+    shadowPath.lineTo(
+      center.dx - shadowWidth / 2 * cos(perpAngle),
+      center.dy - shadowWidth / 2 * sin(perpAngle),
+    );
+    shadowPath.lineTo(pointerEnd.dx, pointerEnd.dy);
+    shadowPath.close();
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawPath(shadowPath, shadowPaint);
+
+    // Draw tapered pointer (arrow shape)
+    final pointerPath = Path();
+    final baseWidth = 6.0;
+
+    // Base of the pointer (wider)
+    pointerPath.moveTo(
+      center.dx + baseWidth * cos(perpAngle),
+      center.dy + baseWidth * sin(perpAngle),
+    );
+    pointerPath.lineTo(
+      center.dx - baseWidth * cos(perpAngle),
+      center.dy - baseWidth * sin(perpAngle),
+    );
+
+    // Tip of the pointer (narrow point)
+    pointerPath.lineTo(pointerEnd.dx, pointerEnd.dy);
+    pointerPath.close();
+
+    // Gradient from center to tip
+    final pointerPaint = Paint()
+      ..shader = ui.Gradient.linear(
+        center,
+        pointerEnd,
+        [
+          color.withOpacity(0.7),
+          color,
+        ],
+        [0.0, 1.0],
+      )
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(pointerPath, pointerPaint);
+
+    // Draw border around pointer for definition
+    final borderPaint = Paint()
+      ..color = color.withOpacity(0.9)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawPath(pointerPath, borderPaint);
+
+    // Draw center pivot circle with glow
+    final glowPaint = Paint()
+      ..color = color.withOpacity(0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawCircle(center, 12, glowPaint);
+
+    final centerPivotPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(pointerEnd, 6, circlePaint);
+    canvas.drawCircle(center, 8, centerPivotPaint);
 
-    // Draw time text
+    final centerHighlight = Paint()
+      ..color = Colors.white.withOpacity(0.4)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(center.dx - 2, center.dy - 2),
+      3,
+      centerHighlight,
+    );
+
+    // Draw modern pointer tip with glow
+    final tipGlowPaint = Paint()
+      ..color = color.withOpacity(0.4)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    canvas.drawCircle(pointerEnd, 10, tipGlowPaint);
+
+    final tipPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(pointerEnd, 7, tipPaint);
+
+    final tipBorderPaint = Paint()
+      ..color = Colors.white.withOpacity(0.6)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawCircle(pointerEnd, 7, tipBorderPaint);
+
+    // Draw time text in a modern badge
     final hour = currentHour.floor();
     final minute = ((currentHour - hour) * 60).round();
     final timeText = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
@@ -186,20 +271,75 @@ class ClockPainter extends CustomPainter {
       text: TextSpan(
         text: timeText,
         style: TextStyle(
-          color: color,
-          fontSize: 12,
+          color: Colors.white,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
-          backgroundColor: Colors.white.withOpacity(0.8),
+          letterSpacing: 0.5,
         ),
       ),
       textDirection: ui.TextDirection.ltr,
     );
     timePainter.layout();
-    final timeOffset = Offset(
-      pointerEnd.dx - timePainter.width / 2,
-      pointerEnd.dy - timePainter.height - 10,
+
+    final badgePadding = 6.0;
+    final badgeWidth = timePainter.width + badgePadding * 2;
+    final badgeHeight = timePainter.height + badgePadding * 1.5;
+    final badgeOffset = Offset(
+      pointerEnd.dx - badgeWidth / 2,
+      pointerEnd.dy - badgeHeight - 18,
     );
-    timePainter.paint(canvas, timeOffset);
+
+    // Badge shadow
+    final badgeRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        badgeOffset.dx + 1,
+        badgeOffset.dy + 1,
+        badgeWidth,
+        badgeHeight,
+      ),
+      const Radius.circular(12),
+    );
+    final badgeShadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.2)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawRRect(badgeRect, badgeShadowPaint);
+
+    // Badge background with gradient
+    final badgeRRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        badgeOffset.dx,
+        badgeOffset.dy,
+        badgeWidth,
+        badgeHeight,
+      ),
+      const Radius.circular(12),
+    );
+
+    final badgePaint = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset(badgeOffset.dx, badgeOffset.dy),
+        Offset(badgeOffset.dx, badgeOffset.dy + badgeHeight),
+        [
+          color.withOpacity(0.95),
+          color.withOpacity(0.85),
+        ],
+      )
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(badgeRRect, badgePaint);
+
+    // Badge border
+    final badgeBorderPaint = Paint()
+      ..color = Colors.white.withOpacity(0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawRRect(badgeRRect, badgeBorderPaint);
+
+    // Draw time text
+    final timeTextOffset = Offset(
+      badgeOffset.dx + badgePadding,
+      badgeOffset.dy + badgePadding * 0.75,
+    );
+    timePainter.paint(canvas, timeTextOffset);
   }
 
   void _drawLegend(Canvas canvas, Size size, ColorScheme colorScheme) {
