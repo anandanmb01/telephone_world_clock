@@ -148,37 +148,39 @@ class ClockPainter extends CustomPainter {
       }
     }
 
-    // Draw AM/PM labels
-    final amPmStyle = TextStyle(
-      color: color,
-      fontSize: isOuter ? 11 : 9,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.8,
-    );
+    // Draw AM/PM labels (only on inner circle)
+    if (!isOuter) {
+      final amPmStyle = TextStyle(
+        color: Colors.grey,
+        fontSize: 9,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.8,
+      );
 
-    // PM label (left side, 9 o'clock position)
-    final pmPainter = TextPainter(
-      text: TextSpan(text: 'PM', style: amPmStyle),
-      textDirection: ui.TextDirection.ltr,
-    );
-    pmPainter.layout();
-    final pmOffset = Offset(
-      center.dx - radius * 0.35 - pmPainter.width / 2,
-      center.dy - pmPainter.height / 2,
-    );
-    pmPainter.paint(canvas, pmOffset);
+      // PM label (left side, 9 o'clock position)
+      final pmPainter = TextPainter(
+        text: TextSpan(text: 'PM', style: amPmStyle),
+        textDirection: ui.TextDirection.ltr,
+      );
+      pmPainter.layout();
+      final pmOffset = Offset(
+        center.dx - radius * 0.35 - pmPainter.width / 2,
+        center.dy - pmPainter.height / 2,
+      );
+      pmPainter.paint(canvas, pmOffset);
 
-    // AM label (right side, 3 o'clock position)
-    final amPainter = TextPainter(
-      text: TextSpan(text: 'AM', style: amPmStyle),
-      textDirection: ui.TextDirection.ltr,
-    );
-    amPainter.layout();
-    final amOffset = Offset(
-      center.dx + radius * 0.35 - amPainter.width / 2,
-      center.dy - amPainter.height / 2,
-    );
-    amPainter.paint(canvas, amOffset);
+      // AM label (right side, 3 o'clock position)
+      final amPainter = TextPainter(
+        text: TextSpan(text: 'AM', style: amPmStyle),
+        textDirection: ui.TextDirection.ltr,
+      );
+      amPainter.layout();
+      final amOffset = Offset(
+        center.dx + radius * 0.35 - amPainter.width / 2,
+        center.dy - amPainter.height / 2,
+      );
+      amPainter.paint(canvas, amOffset);
+    }
 
     // Draw country label (moved up for inner clock, between circles for outer)
     final countryPainter = TextPainter(
@@ -382,13 +384,18 @@ class ClockPainter extends CustomPainter {
   }
 
   void _drawLegend(Canvas canvas, Size size, ColorScheme colorScheme) {
-    final legendY = size.height - 40;
+    final center = Offset(size.width / 2, size.height / 2);
+    final outerRadius = min(size.width, size.height) / 2 - 20;
 
-    // Local time legend
+    // Calculate position below the clock with suitable padding
+    final legendY = center.dy + outerRadius + 30;
+    final horizontalPadding = 20.0;
+
+    // Local time legend (left extreme)
     final localCirclePaint = Paint()
       ..color = colorScheme.secondary
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(40, legendY), 8, localCirclePaint);
+    canvas.drawCircle(Offset(horizontalPadding + 8, legendY), 8, localCirclePaint);
 
     final localTextPainter = TextPainter(
       text: TextSpan(
@@ -401,14 +408,9 @@ class ClockPainter extends CustomPainter {
       textDirection: ui.TextDirection.ltr,
     );
     localTextPainter.layout();
-    localTextPainter.paint(canvas, Offset(55, legendY - 6));
+    localTextPainter.paint(canvas, Offset(horizontalPadding + 23, legendY - 6));
 
-    // Remote time legend
-    final remoteCirclePaint = Paint()
-      ..color = colorScheme.primary
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width / 2 + 20, legendY), 8, remoteCirclePaint);
-
+    // Remote time legend (right extreme)
     final remoteTextPainter = TextPainter(
       text: TextSpan(
         text: 'Outer: $remoteCountry',
@@ -420,7 +422,15 @@ class ClockPainter extends CustomPainter {
       textDirection: ui.TextDirection.ltr,
     );
     remoteTextPainter.layout();
-    remoteTextPainter.paint(canvas, Offset(size.width / 2 + 35, legendY - 6));
+
+    final remoteCirclePaint = Paint()
+      ..color = colorScheme.primary
+      ..style = PaintingStyle.fill;
+
+    // Position at right extreme
+    final remoteX = size.width - horizontalPadding - remoteTextPainter.width - 23;
+    canvas.drawCircle(Offset(remoteX + 8, legendY), 8, remoteCirclePaint);
+    remoteTextPainter.paint(canvas, Offset(remoteX + 23, legendY - 6));
   }
 
   @override
