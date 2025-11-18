@@ -1,10 +1,45 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/country_data.dart';
 import '../constants/country_codes.dart';
 import '../widgets/concentric_clock_widget.dart';
+
+/// Custom text input formatter for time input (HH:mm)
+class TimeInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+
+    // Remove any non-digit characters except colon
+    String digitsOnly = text.replaceAll(RegExp(r'[^\d]'), '');
+
+    // Limit to 4 digits (HHmm)
+    if (digitsOnly.length > 4) {
+      digitsOnly = digitsOnly.substring(0, 4);
+    }
+
+    // Format with colon
+    String formatted = '';
+    if (digitsOnly.isEmpty) {
+      formatted = '';
+    } else if (digitsOnly.length <= 2) {
+      formatted = digitsOnly;
+    } else {
+      formatted = '${digitsOnly.substring(0, 2)}:${digitsOnly.substring(2)}';
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 /// Main home page for the world clock application
 class WorldClockHomePage extends StatefulWidget {
@@ -242,6 +277,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
                 Expanded(
                   child: TextField(
                     controller: _localTimeController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [TimeInputFormatter()],
                     decoration: InputDecoration(
                       labelText: '$_systemTimezoneName Time (HH:mm)',
                       border: const OutlineInputBorder(),
@@ -259,6 +296,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
                 Expanded(
                   child: TextField(
                     controller: _remoteTimeController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [TimeInputFormatter()],
                     decoration: InputDecoration(
                       labelText: '${countryData[_phoneCountryCode]?['name']} Time (HH:mm)',
                       border: const OutlineInputBorder(),
