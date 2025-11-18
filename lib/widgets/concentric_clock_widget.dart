@@ -188,15 +188,17 @@ class ClockPainter extends CustomPainter {
         text: country,
         style: TextStyle(
           color: color,
-          fontSize: isOuter ? 16 : 14,
-          fontWeight: FontWeight.bold,
+          fontSize: isOuter ? 11 : 10,
+          fontWeight: FontWeight.w600,
         ),
       ),
       textDirection: ui.TextDirection.ltr,
+      maxLines: 1,
+      ellipsis: '...',
     );
-    countryPainter.layout();
+    countryPainter.layout(maxWidth: radius * 1.4);
     // Inner clock label above center, outer clock label at bottom between circles
-    final labelYPosition = isOuter ? radius * 0.75 : -radius * 0.25;
+    final labelYPosition = isOuter ? radius * 0.75 : -radius * 0.3;
     final labelOffset = Offset(
       center.dx - countryPainter.width / 2,
       center.dy + labelYPosition - countryPainter.height / 2,
