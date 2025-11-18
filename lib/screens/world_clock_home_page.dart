@@ -49,11 +49,13 @@ class WorldClockHomePage extends StatefulWidget {
   State<WorldClockHomePage> createState() => _WorldClockHomePageState();
 }
 
-class _WorldClockHomePageState extends State<WorldClockHomePage> {
+class _WorldClockHomePageState extends State<WorldClockHomePage>
+    with SingleTickerProviderStateMixin {
   String _phoneCountryCode = 'IN';
   int _phoneOffset = 330; // Default to India
   Timer? _timer;
   DateTime _currentTime = DateTime.now();
+  late TabController _tabController;
 
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _localTimeController = TextEditingController();
@@ -79,6 +81,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _currentTime = DateTime.now();
@@ -89,6 +92,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _tabController.dispose();
     _phoneController.dispose();
     _localTimeController.dispose();
     _remoteTimeController.dispose();
@@ -110,6 +114,15 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
       _phoneCountryCode = detectCountryFromPhone(phoneNumber);
       _phoneOffset = countryData[_phoneCountryCode]?['offset'] ?? 330;
     });
+  }
+
+  void _onCountrySelected(String? countryCode) {
+    if (countryCode != null) {
+      setState(() {
+        _phoneCountryCode = countryCode;
+        _phoneOffset = countryData[countryCode]?['offset'] ?? 330;
+      });
+    }
   }
 
   void _convertLocalToRemote(String localTime) {
@@ -210,51 +223,108 @@ class _WorldClockHomePageState extends State<WorldClockHomePage> {
   Widget _buildPhoneInputCard() {
     return Card(
       elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        children: [
+          TabBar(
+            controller: _tabController,
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            indicatorColor: Theme.of(context).colorScheme.primary,
+            tabs: const [
+              Tab(icon: Icon(Icons.phone), text: 'Mobile Number'),
+              Tab(icon: Icon(Icons.public), text: 'Select Country'),
+            ],
+          ),
+          SizedBox(
+            height: 180,
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                Text(
-                  'Enter Phone Number',
-                  style: Theme.of(context).textTheme.titleMedium,
+                // Tab 1: Mobile Number Input
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _resetPhoneNumber,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Reset'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                              foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number',
+                          hintText: '+916734... or +1234...',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.phone),
+                        ),
+                        onChanged: _onPhoneChanged,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Detected Country: ${countryData[_phoneCountryCode]?['name'] ?? 'Unknown'}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: _resetPhoneNumber,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Reset'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                    foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                // Tab 2: Country Selector
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Country',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _phoneCountryCode,
+                        decoration: const InputDecoration(
+                          labelText: 'Country',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.flag),
+                        ),
+                        items: countryData.entries.map((entry) {
+                          return DropdownMenuItem<String>(
+                            value: entry.key,
+                            child: Text(entry.value['name'] as String),
+                          );
+                        }).toList()
+                          ..sort((a, b) => (a.child as Text).data!.compareTo((b.child as Text).data!)),
+                        onChanged: _onCountrySelected,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Selected: ${countryData[_phoneCountryCode]?['name'] ?? 'Unknown'}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                hintText: '+916734... or +1234...',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.phone),
-              ),
-              onChanged: _onPhoneChanged,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Detected Country: ${countryData[_phoneCountryCode]?['name'] ?? 'Unknown'}',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
