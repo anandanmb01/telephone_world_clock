@@ -116,11 +116,21 @@ class ClockPainter extends CustomPainter {
         ..strokeWidth = i % 6 == 0 ? 3 : 1;
       canvas.drawLine(markerStart, markerEnd, markerPaint);
 
-      // Draw hour numbers
+      // Draw hour numbers (AM on left: 0->12, PM on right: 12->0)
       if (i % 3 == 0) {
+        // Calculate display hour
+        // Left side (AM): 0-12 shows as 0-12
+        // Right side (PM): 13-23 shows as 11-1 (counting backwards)
+        int displayHour;
+        if (i <= 12) {
+          displayHour = i;
+        } else {
+          displayHour = 24 - i;
+        }
+
         final textPainter = TextPainter(
           text: TextSpan(
-            text: i.toString(),
+            text: displayHour.toString(),
             style: TextStyle(
               color: color,
               fontSize: isOuter ? 14 : 12,
@@ -138,7 +148,39 @@ class ClockPainter extends CustomPainter {
       }
     }
 
-    // Draw country label
+    // Draw AM/PM labels
+    final amPmStyle = TextStyle(
+      color: color,
+      fontSize: isOuter ? 12 : 10,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1.0,
+    );
+
+    // AM label (left side, 9 o'clock position)
+    final amPainter = TextPainter(
+      text: TextSpan(text: 'AM', style: amPmStyle),
+      textDirection: ui.TextDirection.ltr,
+    );
+    amPainter.layout();
+    final amOffset = Offset(
+      center.dx - radius * 0.4 - amPainter.width / 2,
+      center.dy - amPainter.height / 2,
+    );
+    amPainter.paint(canvas, amOffset);
+
+    // PM label (right side, 3 o'clock position)
+    final pmPainter = TextPainter(
+      text: TextSpan(text: 'PM', style: amPmStyle),
+      textDirection: ui.TextDirection.ltr,
+    );
+    pmPainter.layout();
+    final pmOffset = Offset(
+      center.dx + radius * 0.4 - pmPainter.width / 2,
+      center.dy - pmPainter.height / 2,
+    );
+    pmPainter.paint(canvas, pmOffset);
+
+    // Draw country label (moved up for inner clock)
     final countryPainter = TextPainter(
       text: TextSpan(
         text: country,
@@ -153,7 +195,7 @@ class ClockPainter extends CustomPainter {
     countryPainter.layout();
     final labelOffset = Offset(
       center.dx - countryPainter.width / 2,
-      center.dy + (isOuter ? radius * 0.5 : 0) - countryPainter.height / 2,
+      center.dy + (isOuter ? radius * 0.5 : -radius * 0.25) - countryPainter.height / 2,
     );
     countryPainter.paint(canvas, labelOffset);
   }
