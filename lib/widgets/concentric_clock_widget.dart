@@ -156,29 +156,29 @@ class ClockPainter extends CustomPainter {
       letterSpacing: 0.8,
     );
 
-    // AM label (left side, 9 o'clock position)
-    final amPainter = TextPainter(
-      text: TextSpan(text: 'AM', style: amPmStyle),
-      textDirection: ui.TextDirection.ltr,
-    );
-    amPainter.layout();
-    final amOffset = Offset(
-      center.dx - radius * 0.35 - amPainter.width / 2,
-      center.dy - amPainter.height / 2,
-    );
-    amPainter.paint(canvas, amOffset);
-
-    // PM label (right side, 3 o'clock position)
+    // PM label (left side, 9 o'clock position)
     final pmPainter = TextPainter(
       text: TextSpan(text: 'PM', style: amPmStyle),
       textDirection: ui.TextDirection.ltr,
     );
     pmPainter.layout();
     final pmOffset = Offset(
-      center.dx + radius * 0.35 - pmPainter.width / 2,
+      center.dx - radius * 0.35 - pmPainter.width / 2,
       center.dy - pmPainter.height / 2,
     );
     pmPainter.paint(canvas, pmOffset);
+
+    // AM label (right side, 3 o'clock position)
+    final amPainter = TextPainter(
+      text: TextSpan(text: 'AM', style: amPmStyle),
+      textDirection: ui.TextDirection.ltr,
+    );
+    amPainter.layout();
+    final amOffset = Offset(
+      center.dx + radius * 0.35 - amPainter.width / 2,
+      center.dy - amPainter.height / 2,
+    );
+    amPainter.paint(canvas, amOffset);
 
     // Draw country label (moved up for inner clock)
     final countryPainter = TextPainter(
@@ -297,7 +297,12 @@ class ClockPainter extends CustomPainter {
     // Draw time text in a modern badge
     final hour = currentHour.floor();
     final minute = ((currentHour - hour) * 60).round();
-    final timeText = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+
+    // Convert to 12-hour format with AM/PM
+    final isPM = hour >= 12;
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final amPm = isPM ? 'PM' : 'AM';
+    final timeText = '${displayHour.toString()}:${minute.toString().padLeft(2, '0')} $amPm';
 
     final timePainter = TextPainter(
       text: TextSpan(
