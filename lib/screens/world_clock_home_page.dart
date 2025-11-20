@@ -245,7 +245,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('World Clock by Phone Number'),
+        title: const Text('TimeZone'),
         centerTitle: true,
         elevation: 2,
       ),
