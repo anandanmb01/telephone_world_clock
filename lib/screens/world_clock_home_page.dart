@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 import '../constants/country_data.dart';
 import '../constants/country_codes.dart';
@@ -175,7 +174,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
       final remoteMinutes = localMinutes + (_phoneOffset - _systemOffset);
 
       final normalizedMinutes = remoteMinutes % 1440;
-      final adjustedMinutes = normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
+      final adjustedMinutes =
+          normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
 
       int remoteHour = adjustedMinutes ~/ 60;
       final remoteMinute = adjustedMinutes % 60;
@@ -188,7 +188,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
         } else if (remoteHour == 0) {
           remoteHour = 12;
         }
-        _remoteTimeController.text = '${remoteHour.toString().padLeft(2, '0')}:${remoteMinute.toString().padLeft(2, '0')}';
+        _remoteTimeController.text =
+            '${remoteHour.toString().padLeft(2, '0')}:${remoteMinute.toString().padLeft(2, '0')}';
       });
     } catch (e) {
       // Invalid time, do nothing
@@ -221,7 +222,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
       final localMinutes = remoteMinutes + (_systemOffset - _phoneOffset);
 
       final normalizedMinutes = localMinutes % 1440;
-      final adjustedMinutes = normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
+      final adjustedMinutes =
+          normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
 
       int localHour = adjustedMinutes ~/ 60;
       final localMinute = adjustedMinutes % 60;
@@ -234,7 +236,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
         } else if (localHour == 0) {
           localHour = 12;
         }
-        _localTimeController.text = '${localHour.toString().padLeft(2, '0')}:${localMinute.toString().padLeft(2, '0')}';
+        _localTimeController.text =
+            '${localHour.toString().padLeft(2, '0')}:${localMinute.toString().padLeft(2, '0')}';
       });
     } catch (e) {
       // Invalid time, do nothing
@@ -245,7 +248,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TimeZone'),
+        title: const Text('TimeHop'),
         centerTitle: true,
         elevation: 2,
       ),
@@ -280,7 +283,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
               '24-Hour World Clock',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             SizedBox(
               height: 400,
               child: RepaintBoundary(
@@ -289,7 +292,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                   localOffset: _systemOffset,
                   remoteOffset: _phoneOffset,
                   localCountry: _systemTimezoneName,
-                  remoteCountry: countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
+                  remoteCountry:
+                      countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
                 ),
               ),
             ),
@@ -307,7 +311,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
           TabBar(
             controller: _tabController,
             labelColor: Theme.of(context).colorScheme.primary,
-            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            unselectedLabelColor:
+                Theme.of(context).colorScheme.onSurfaceVariant,
             indicatorColor: Theme.of(context).colorScheme.primary,
             tabs: const [
               Tab(icon: Icon(Icons.phone), text: 'Mobile Number'),
@@ -357,7 +362,10 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                           icon: const Icon(Icons.refresh, size: 16),
                           label: const Text('Reset'),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             textStyle: const TextStyle(fontSize: 13),
                           ),
                         ),
@@ -383,13 +391,18 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.flag),
                         ),
-                        items: countryData.entries.map((entry) {
-                          return DropdownMenuItem<String>(
-                            value: entry.key,
-                            child: Text(entry.value['name'] as String),
-                          );
-                        }).toList()
-                          ..sort((a, b) => (a.child as Text).data!.compareTo((b.child as Text).data!)),
+                        items:
+                            countryData.entries.map((entry) {
+                                return DropdownMenuItem<String>(
+                                  value: entry.key,
+                                  child: Text(entry.value['name'] as String),
+                                );
+                              }).toList()
+                              ..sort(
+                                (a, b) => (a.child as Text).data!.compareTo(
+                                  (b.child as Text).data!,
+                                ),
+                              ),
                         onChanged: _onCountrySelected,
                       ),
                       const SizedBox(height: 8),
@@ -447,14 +460,18 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                         value: _localAmPm,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                         ),
-                        items: ['AM', 'PM'].map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        items:
+                            ['AM', 'PM'].map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
                             _localAmPm = newValue!;
@@ -483,7 +500,8 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                         keyboardType: TextInputType.number,
                         inputFormatters: [TimeInputFormatter()],
                         decoration: InputDecoration(
-                          labelText: '${countryData[_phoneCountryCode]?['name']} Time',
+                          labelText:
+                              '${countryData[_phoneCountryCode]?['name']} Time',
                           border: const OutlineInputBorder(),
                           hintText: '09:00',
                         ),
@@ -494,14 +512,18 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
                         value: _remoteAmPm,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                         ),
-                        items: ['AM', 'PM'].map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        items:
+                            ['AM', 'PM'].map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
                             _remoteAmPm = newValue!;
