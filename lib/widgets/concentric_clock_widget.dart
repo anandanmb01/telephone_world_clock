@@ -480,8 +480,12 @@ class ClockPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ClockPainter oldDelegate) {
-    return currentTime != oldDelegate.currentTime ||
+    // Only repaint when minute changes (not every second) or offsets change
+    return currentTime.minute != oldDelegate.currentTime.minute ||
+        currentTime.hour != oldDelegate.currentTime.hour ||
         localOffset != oldDelegate.localOffset ||
-        remoteOffset != oldDelegate.remoteOffset;
+        remoteOffset != oldDelegate.remoteOffset ||
+        localCountry != oldDelegate.localCountry ||
+        remoteCountry != oldDelegate.remoteCountry;
   }
 }

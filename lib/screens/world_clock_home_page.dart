@@ -245,7 +245,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('World Clock by Phone Number'),
+        title: const Text('TimeZone'),
         centerTitle: true,
         elevation: 2,
       ),
@@ -263,18 +263,6 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
             // Time converter
             _buildTimeConverterCard(),
             const SizedBox(height: 16),
-            // Credits at bottom right
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'for dibina',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey.withOpacity(0.4),
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -295,12 +283,14 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
             const SizedBox(height: 16),
             SizedBox(
               height: 400,
-              child: ConcentricClockWidget(
-                currentTime: _currentTime,
-                localOffset: _systemOffset,
-                remoteOffset: _phoneOffset,
-                localCountry: _systemTimezoneName,
-                remoteCountry: countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
+              child: RepaintBoundary(
+                child: ConcentricClockWidget(
+                  currentTime: _currentTime,
+                  localOffset: _systemOffset,
+                  remoteOffset: _phoneOffset,
+                  localCountry: _systemTimezoneName,
+                  remoteCountry: countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
+                ),
               ),
             ),
           ],
@@ -325,7 +315,7 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
             ],
           ),
           SizedBox(
-            height: 180,
+            height: 195,
             child: TabBarView(
               controller: _tabController,
               children: [
