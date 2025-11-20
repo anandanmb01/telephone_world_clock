@@ -283,12 +283,14 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
             const SizedBox(height: 16),
             SizedBox(
               height: 400,
-              child: ConcentricClockWidget(
-                currentTime: _currentTime,
-                localOffset: _systemOffset,
-                remoteOffset: _phoneOffset,
-                localCountry: _systemTimezoneName,
-                remoteCountry: countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
+              child: RepaintBoundary(
+                child: ConcentricClockWidget(
+                  currentTime: _currentTime,
+                  localOffset: _systemOffset,
+                  remoteOffset: _phoneOffset,
+                  localCountry: _systemTimezoneName,
+                  remoteCountry: countryData[_phoneCountryCode]?['name'] ?? 'Unknown',
+                ),
               ),
             ),
           ],
