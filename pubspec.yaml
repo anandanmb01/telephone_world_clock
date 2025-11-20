@@ -1,5 +1,5 @@
-name: tel_world_calc
-description: "A new Flutter project."
+name: timehop
+description: "A comprehensive world clock app displaying current times across 200+ countries and territories with phone number-based lookup."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
