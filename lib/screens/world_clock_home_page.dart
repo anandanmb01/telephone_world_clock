@@ -61,6 +61,10 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
   final TextEditingController _localTimeController = TextEditingController();
   final TextEditingController _remoteTimeController = TextEditingController();
 
+  // AM/PM state for time converter
+  String _localAmPm = 'AM';
+  String _remoteAmPm = 'AM';
+
   // Get system timezone offset in minutes
   int get _systemOffset {
     final now = DateTime.now();
@@ -147,41 +151,93 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
 
   void _convertLocalToRemote(String localTime) {
     try {
-      final timeFormat = DateFormat('HH:mm');
-      final parsedTime = timeFormat.parse(localTime);
+      if (localTime.isEmpty || !localTime.contains(':')) return;
 
-      final localMinutes = parsedTime.hour * 60 + parsedTime.minute;
+      final parts = localTime.split(':');
+      if (parts.length != 2) return;
+
+      int hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      // Validate 12-hour format
+      if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+        return;
+      }
+
+      // Convert to 24-hour format
+      if (_localAmPm == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (_localAmPm == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      final localMinutes = hour * 60 + minute;
       final remoteMinutes = localMinutes + (_phoneOffset - _systemOffset);
 
       final normalizedMinutes = remoteMinutes % 1440;
       final adjustedMinutes = normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
 
-      final remoteHour = adjustedMinutes ~/ 60;
+      int remoteHour = adjustedMinutes ~/ 60;
       final remoteMinute = adjustedMinutes % 60;
 
-      _remoteTimeController.text = '${remoteHour.toString().padLeft(2, '0')}:${remoteMinute.toString().padLeft(2, '0')}';
+      // Convert to 12-hour format
+      setState(() {
+        _remoteAmPm = remoteHour >= 12 ? 'PM' : 'AM';
+        if (remoteHour > 12) {
+          remoteHour -= 12;
+        } else if (remoteHour == 0) {
+          remoteHour = 12;
+        }
+        _remoteTimeController.text = '${remoteHour.toString().padLeft(2, '0')}:${remoteMinute.toString().padLeft(2, '0')}';
+      });
     } catch (e) {
-      _remoteTimeController.text = 'Invalid time';
+      // Invalid time, do nothing
     }
   }
 
   void _convertRemoteToLocal(String remoteTime) {
     try {
-      final timeFormat = DateFormat('HH:mm');
-      final parsedTime = timeFormat.parse(remoteTime);
+      if (remoteTime.isEmpty || !remoteTime.contains(':')) return;
 
-      final remoteMinutes = parsedTime.hour * 60 + parsedTime.minute;
+      final parts = remoteTime.split(':');
+      if (parts.length != 2) return;
+
+      int hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      // Validate 12-hour format
+      if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+        return;
+      }
+
+      // Convert to 24-hour format
+      if (_remoteAmPm == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (_remoteAmPm == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      final remoteMinutes = hour * 60 + minute;
       final localMinutes = remoteMinutes + (_systemOffset - _phoneOffset);
 
       final normalizedMinutes = localMinutes % 1440;
       final adjustedMinutes = normalizedMinutes < 0 ? normalizedMinutes + 1440 : normalizedMinutes;
 
-      final localHour = adjustedMinutes ~/ 60;
+      int localHour = adjustedMinutes ~/ 60;
       final localMinute = adjustedMinutes % 60;
 
-      _localTimeController.text = '${localHour.toString().padLeft(2, '0')}:${localMinute.toString().padLeft(2, '0')}';
+      // Convert to 12-hour format
+      setState(() {
+        _localAmPm = localHour >= 12 ? 'PM' : 'AM';
+        if (localHour > 12) {
+          localHour -= 12;
+        } else if (localHour == 0) {
+          localHour = 12;
+        }
+        _localTimeController.text = '${localHour.toString().padLeft(2, '0')}:${localMinute.toString().padLeft(2, '0')}';
+      });
     } catch (e) {
-      _localTimeController.text = 'Invalid time';
+      // Invalid time, do nothing
     }
   }
 
@@ -379,37 +435,91 @@ class _WorldClockHomePageState extends State<WorldClockHomePage>
             ),
             const SizedBox(height: 16),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _localTimeController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [TimeInputFormatter()],
-                    decoration: InputDecoration(
-                      labelText: '$_systemTimezoneName Time (HH:mm)',
-                      border: const OutlineInputBorder(),
-                      hintText: '14:30',
-                    ),
-                    onChanged: _convertLocalToRemote,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _localTimeController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [TimeInputFormatter()],
+                        decoration: InputDecoration(
+                          labelText: '$_systemTimezoneName Time',
+                          border: const OutlineInputBorder(),
+                          hintText: '02:30',
+                        ),
+                        onChanged: _convertLocalToRemote,
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _localAmPm,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        items: ['AM', 'PM'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _localAmPm = newValue!;
+                            _convertLocalToRemote(_localTimeController.text);
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 16),
-                Icon(
-                  Icons.sync_alt,
-                  color: Theme.of(context).colorScheme.primary,
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: Icon(
+                    Icons.sync_alt,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: TextField(
-                    controller: _remoteTimeController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [TimeInputFormatter()],
-                    decoration: InputDecoration(
-                      labelText: '${countryData[_phoneCountryCode]?['name']} Time (HH:mm)',
-                      border: const OutlineInputBorder(),
-                      hintText: '09:00',
-                    ),
-                    onChanged: _convertRemoteToLocal,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _remoteTimeController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [TimeInputFormatter()],
+                        decoration: InputDecoration(
+                          labelText: '${countryData[_phoneCountryCode]?['name']} Time',
+                          border: const OutlineInputBorder(),
+                          hintText: '09:00',
+                        ),
+                        onChanged: _convertRemoteToLocal,
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _remoteAmPm,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        items: ['AM', 'PM'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _remoteAmPm = newValue!;
+                            _convertRemoteToLocal(_remoteTimeController.text);
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ],
