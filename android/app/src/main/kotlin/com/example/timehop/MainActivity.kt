@@ -1,4 +1,4 @@
-package com.example.telephone_world_clock
+package com.example.timehop
 
 import io.flutter.embedding.android.FlutterActivity
 
